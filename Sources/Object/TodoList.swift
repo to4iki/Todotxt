@@ -1,4 +1,4 @@
-public struct TodoList: ExpressibleByArrayLiteral {
+public struct TodoList: ExpressibleByArrayLiteral, Sequence {
   public var value: [Todo]
 
   public init(_ value: [Todo]) {
@@ -7,6 +7,31 @@ public struct TodoList: ExpressibleByArrayLiteral {
 
   public init(arrayLiteral elements: Todo...) {
     self.init(elements)
+  }
+
+  public func makeIterator() -> TodoListIterator {
+    TodoListIterator(self)
+  }
+}
+
+// MARK: - IteratorProtocol
+
+public struct TodoListIterator: IteratorProtocol {
+  public typealias Element = Todo
+
+  private let list: TodoList
+  private var index: Int = 0
+
+  fileprivate init(_ _todoList: TodoList) {
+    self.list = _todoList
+  }
+
+  public mutating func next() -> Element? {
+    defer { index += 1 }
+    guard index < list.value.count else {
+      return nil
+    }
+    return list.value[index]
   }
 }
 
