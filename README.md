@@ -38,7 +38,7 @@ let inputs = """
 """.components(separatedBy: "\n")
 
 let todoList = TodoBuilder.build(inputs: inputs)
-todoList.sorted(by: .priority).value.map(\.title)
+todoList.sorted(by: .priority).compactMap(\.title)
 // title_1, title_5, title_3, title_2, title_4
 ```
 

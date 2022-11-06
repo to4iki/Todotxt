@@ -1,4 +1,5 @@
-public struct TodoList: ExpressibleByArrayLiteral {
+/// Objects corresponding to one line of Todo.txt file
+public struct TodoList: ExpressibleByArrayLiteral, Sequence {
   public var value: [Todo]
 
   public init(_ value: [Todo]) {
@@ -8,11 +9,37 @@ public struct TodoList: ExpressibleByArrayLiteral {
   public init(arrayLiteral elements: Todo...) {
     self.init(elements)
   }
+
+  public func makeIterator() -> TodoListIterator {
+    TodoListIterator(self)
+  }
+}
+
+// MARK: - IteratorProtocol
+
+public struct TodoListIterator: IteratorProtocol {
+  public typealias Element = Todo
+
+  private let list: TodoList
+  private var index: Int = 0
+
+  fileprivate init(_ _todoList: TodoList) {
+    self.list = _todoList
+  }
+
+  public mutating func next() -> Element? {
+    defer { index += 1 }
+    guard index < list.value.count else {
+      return nil
+    }
+    return list.value[index]
+  }
 }
 
 // MARK: - Sort
 
 extension TodoList {
+  /// ``Todo`` object property type.
   public enum SortType {
     case dueDate
     case priority
@@ -20,6 +47,10 @@ extension TodoList {
     case context
   }
 
+  /// Sort by ``Todo`` object property.
+  ///
+  /// - Parameter type: sorting key type.
+  /// - Returns: A sorted array of the sequence’s elements ``TodoList``.
   public func sorted(by type: SortType) -> TodoList {
     switch type {
     case .dueDate:
