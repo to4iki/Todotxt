@@ -1,3 +1,4 @@
+/// Objects corresponding to one line of Todo.txt file
 public struct TodoList: ExpressibleByArrayLiteral, Sequence {
   public var value: [Todo]
 
@@ -38,6 +39,7 @@ public struct TodoListIterator: IteratorProtocol {
 // MARK: - Sort
 
 extension TodoList {
+  /// ``Todo`` object property type.
   public enum SortType {
     case dueDate
     case priority
@@ -45,6 +47,10 @@ extension TodoList {
     case context
   }
 
+  /// Sort by ``Todo`` object property.
+  ///
+  /// - Parameter type: sorting key type.
+  /// - Returns: A sorted array of the sequence’s elements ``TodoList``.
   public func sorted(by type: SortType) -> TodoList {
     switch type {
     case .dueDate:

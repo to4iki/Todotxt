@@ -1,10 +1,10 @@
 import Foundation
 
-/// Todo for Todo.txt
+/// Objects corresponding to one line of Todo.txt file
 ///
 /// - Note: e.g. `x (A) title +project @context due:yyyy-mm-dd`
 /// - SeeAlso: https://github.com/todotxt/todo.txt
-public struct Todo: Identifiable, TodoTxtRawRepresentable {
+public struct Todo: Identifiable, TodoRawRepresentable {
   public let id: ID
   public let isCompletion: Bool
   public let priority: Priority?
@@ -78,7 +78,7 @@ extension Todo {
 // MARK: - Priority
 
 extension Todo {
-  public struct Priority: Comparable, TodoTxtRawRepresentable {
+  public struct Priority: Comparable, TodoRawRepresentable {
     public let value: String
 
     public var rawTodoTxt: String {
@@ -98,7 +98,7 @@ extension Todo {
 // MARK: - Project
 
 extension Todo {
-  public struct Project: Comparable, TodoTxtRawRepresentable {
+  public struct Project: Comparable, TodoRawRepresentable {
     public let title: String
 
     public var rawTodoTxt: String {
@@ -118,7 +118,7 @@ extension Todo {
 // MARK: - Context
 
 extension Todo {
-  public struct Context: Comparable, TodoTxtRawRepresentable {
+  public struct Context: Comparable, TodoRawRepresentable {
     public let title: String
 
     public var rawTodoTxt: String {
