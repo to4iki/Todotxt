@@ -10,7 +10,7 @@
       .init(
         id: .init(rawValue: UUID().uuidString),
         isCompletion: Completion.build(input: input),
-        priority: Priority.build(input: input),
+        priority: Priority.build(input: input), dates: DateManagement.build(input: input),
         title: Title.build(input: input),
         project: Project.build(input: input),
         context: Context.build(input: input),
@@ -48,18 +48,21 @@
       static func build(input: String) -> Todo.Priority? {
         let reference = Reference(Todo.Priority.self)
         let regex = Regex {
-          ChoiceOf {
-            One(.whitespace)
-            Anchor.startOfLine
+          Anchor.startOfLine
+          ZeroOrMore {
+            ChoiceOf {
+              One(.whitespace)
+              One("x")
+            }
           }
           "("
           Capture(
-            OneOrMore(.word), as: reference,
+            OneOrMore((try? Regex("[A-Z]"))!), as: reference,
             transform: { word -> Todo.Priority in
               let string = String(word)
               return .init(string)
             })
-          ")"
+          ") "
         }
 
         let match = input.firstMatch(of: regex)
@@ -78,21 +81,37 @@
     enum Title: TodoRegexable {
       static func build(input: String) -> String? {
         let reference = Reference(String.self)
+        let titlematch = OneOrMore {
+          ChoiceOf {
+            One(.whitespace)
+            OneOrMore(.word)
+          }
+          NegativeLookahead {
+            OneOrMore {
+              OneOrMore(.word)
+              One(":")
+            }
+          }
+        }
         let regex = Regex {
           One(.whitespace)
           NegativeLookahead {
-            "due:"
+            ChoiceOf {
+              One(.iso8601Date(timeZone: .gmt))
+                OneOrMore {
+                  One(.whitespace)
+                  OneOrMore(.word)
+                  One(":")
+              }
+            }
           }
-          Capture(
-            OneOrMore(.word), as: reference,
-            transform: { word -> String in
-              String(word)
-            })
+          Capture(titlematch, as: reference,
+                  transform: { word -> String in String(word) })
         }
 
         let match = input.firstMatch(of: regex)
         if let match {
-          return match[reference]
+          return match[reference].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) // because we capture the last space
         } else {
           return nil
         }
@@ -213,6 +232,38 @@ extension TodoBuilder {
                 attrs[match[key]] = match[value]
             }
             return attrs
+        }
+    }
+}
+
+// MARK: - Optional dates like completed and created
+
+extension TodoBuilder {
+    enum DateManagement : TodoRegexable {
+        static func build(input: String) -> (Date,Date?)? {
+            let reference = Reference(Date.self)
+            let regex = Regex {
+                ChoiceOf {
+                    One(.whitespace)
+                    Anchor.startOfLine
+                }
+                Capture(.iso8601Date(timeZone: .gmt), as: reference)
+            }
+            
+            // must appear *before* the title
+            var matches = input.matches(of: regex)
+            if let title = TodoBuilder.Title.build(input: input), let tidx = input.firstMatch(of: title)?.range.lowerBound {
+                matches = matches.filter({ match in
+                    match.range.lowerBound < tidx
+                })
+            }
+            if matches.isEmpty { return nil } // no dates
+            
+            if matches.count == 1 { return (matches[0][reference],nil) } // if there's only one date, it's the creation date
+            else if matches.count == 2 { return (matches[1][reference],matches[0][reference]) }
+            else {
+                fatalError("problem with dates")
+            }
         }
     }
 }
