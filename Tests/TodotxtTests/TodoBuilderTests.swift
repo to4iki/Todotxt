@@ -25,4 +25,41 @@ final class TodoBuilderTests: XCTestCase {
 
     XCTAssertEqual(inputs, outputs)
   }
+    
+    func testBuildInputWithKeys() {
+        let input = "x (A) title +project @context due:2022-09-25 id:17 foo:bar tags:bla,bli,blu"
+        let todo = TodoBuilder.build(input: input)
+        let id = todo["id"]
+        let foo = todo["foo"]
+        let tags = todo["tags"]
+        
+        XCTAssertEqual(id, "17")
+        XCTAssertEqual(foo, "bar")
+        XCTAssertEqual(tags, "bla,bli,blu")
+        
+        let rawOut = todo.rawTodoTxt
+        // no guarantee for the order of the keys
+        XCTAssert(rawOut.contains("id:17"))
+        XCTAssert(rawOut.contains("foo:bar"))
+        XCTAssert(rawOut.contains("tags:bla,bli,blu"))
+    }
+    
+    func testBuildCompletedInputWithKeys() {
+        let input = "x (A) 2022-09-26 title +project @context due:2022-09-25 id:17 foo:bar tags:bla,bli,blu"
+        let todo = TodoBuilder.build(input: input)
+        let id = todo["id"]
+        let foo = todo["foo"]
+        let tags = todo["tags"]
+        
+        XCTAssertEqual(id, "17")
+        XCTAssertEqual(foo, "bar")
+        XCTAssertEqual(tags, "bla,bli,blu")
+        
+        let rawOut = todo.rawTodoTxt
+        // no guarantee for the order of the keys
+        XCTAssert(rawOut.contains("id:17"))
+        XCTAssert(rawOut.contains("foo:bar"))
+        XCTAssert(rawOut.contains("tags:bla,bli,blu"))
+    }
+    
 }

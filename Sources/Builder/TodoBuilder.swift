@@ -6,6 +6,7 @@
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public enum TodoBuilder: TodoRegexable {
     public static func build(input: String) -> Todo {
+        // TODO: implement k:v
       .init(
         id: .init(rawValue: UUID().uuidString),
         isCompletion: Completion.build(input: input),
@@ -13,7 +14,8 @@
         title: Title.build(input: input),
         project: Project.build(input: input),
         context: Context.build(input: input),
-        dueDate: DueDate.build(input: input)
+        dueDate: DueDate.build(input: input),
+        attributes: KeyValueAttributes.build(input: input)
       )
     }
 
@@ -182,4 +184,37 @@
       }
     }
   }
+
+// MARK: - Key/Values
+
+extension TodoBuilder {
+    enum KeyValueAttributes : TodoRegexable {
+        static func build(input: String) -> [String:String] {
+            let valuematch = ChoiceOf{
+                OneOrMore(.word)
+                OneOrMore(.digit)
+                OneOrMore(.anyOf("-_,;."))
+            }
+            let key = Reference(String.self)
+            let value = Reference(String.self)
+            let regex : Regex = Regex {
+                ChoiceOf {
+                    One(.whitespace)
+                    Anchor.startOfLine
+                }
+                Capture(OneOrMore(.word), as: key, transform: { String($0) }) // don't interpret it
+                ":"
+                Capture(OneOrMore(valuematch), as: value, transform: { String($0) })
+            }
+            
+            var attrs : [String:String] = [:]
+            for match in input.matches(of: regex) {
+                if match[key] == "due" { continue }
+                attrs[match[key]] = match[value]
+            }
+            return attrs
+        }
+    }
+}
+
 #endif
