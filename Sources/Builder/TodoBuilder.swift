@@ -93,7 +93,19 @@
           }
         }
         let regex = Regex {
-          One(.whitespace)
+          Anchor.startOfLine
+          ZeroOrMore {
+            ChoiceOf {
+              One("x ")
+              OneOrMore {
+                "("
+                (try? Regex("[A-Z]"))!
+                ") "
+              }
+              One(.iso8601Date(timeZone: .gmt))
+              One(.whitespace)
+            }
+          }
           NegativeLookahead {
             ChoiceOf {
               One(.iso8601Date(timeZone: .gmt))

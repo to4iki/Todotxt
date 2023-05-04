@@ -28,6 +28,9 @@ final class TodoBuilderTests: XCTestCase {
       (A) 2022-09-25 2022-09-15 date7 due:2022-09-20
       x (A) 2022-09-25 2022-09-15 date8 due:2022-09-20
       x (A) 2022-09-25 2022-09-15 date8 tag:2022-09-20
+      something
+      something @context
+      something +project
       """.components(separatedBy: "\n")
     let todoList = TodoBuilder.build(inputs: inputs)
     let outputs = todoList.value.map(\.rawTodoTxt)
