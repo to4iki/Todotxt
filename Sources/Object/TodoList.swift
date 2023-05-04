@@ -1,15 +1,15 @@
 /// Objects corresponding to one line of Todo.txt file
 public struct TodoList: ExpressibleByArrayLiteral, Sequence {
   public var value: [Todo]
-
+  
   public init(_ value: [Todo]) {
     self.value = value
   }
-
+  
   public init(arrayLiteral elements: Todo...) {
     self.init(elements)
   }
-
+  
   public func makeIterator() -> TodoListIterator {
     TodoListIterator(self)
   }
@@ -19,14 +19,14 @@ public struct TodoList: ExpressibleByArrayLiteral, Sequence {
 
 public struct TodoListIterator: IteratorProtocol {
   public typealias Element = Todo
-
+  
   private let list: TodoList
   private var index: Int = 0
-
+  
   fileprivate init(_ _todoList: TodoList) {
     self.list = _todoList
   }
-
+  
   public mutating func next() -> Element? {
     defer { index += 1 }
     guard index < list.value.count else {
@@ -46,7 +46,7 @@ extension TodoList {
     case project
     case context
   }
-
+  
   /// Sort by ``Todo`` object property.
   ///
   /// - Parameter type: sorting key type.
@@ -63,7 +63,7 @@ extension TodoList {
       return _sorted(by: \.context)
     }
   }
-
+  
   /// - Note: default order: *ascending*
   private func _sorted<T: Comparable>(by keyPath: KeyPath<Todo, T?>) -> TodoList {
     let sortedValue = value.sorted { lhs, rhs in

@@ -15,7 +15,7 @@ public struct Todo: Identifiable, TodoRawRepresentable {
   public let context: Context?
   public let dueDate: Date?
   public let attributes: [String:String]
-
+  
   public var rawTodoTxt: String {
     [
       completionRawTodoTxt,
@@ -28,36 +28,36 @@ public struct Todo: Identifiable, TodoRawRepresentable {
       dueRawTodoTxt,
       (self.attributes.map({ $0.key+":"+$0.value }).joined(separator: " ") as String?)
     ]
-    .reduce(into: "") { (result, string) in
-      if let string {
-        result.append(" \(string)")
+      .reduce(into: "") { (result, string) in
+        if let string {
+          result.append(" \(string)")
+        }
       }
-    }
-    .trimmingCharacters(in: .whitespaces)
+      .trimmingCharacters(in: .whitespaces)
   }
-
+  
   private var completionRawTodoTxt: String? {
     isCompletion ? "x" : nil
   }
-
+  
   private var dueRawTodoTxt: String? {
     dueDate.map { date in
       "due:\(Todo.dueDateFormatter.string(from: date))"
     }
   }
-    
+  
   private var completedRawTodoTxt: String? {
     completedAt.map { date in
       "\(Todo.dueDateFormatter.string(from: date))"
     }
   }
-    
+  
   private var createdRawTodoTxt: String? {
     createdAt.map { date in
       "\(Todo.dueDateFormatter.string(from: date))"
     }
   }
-    
+  
   public init(
     id: Todo.ID,
     isCompletion: Bool,
@@ -88,11 +88,11 @@ public struct Todo: Identifiable, TodoRawRepresentable {
 extension Todo {
   public struct ID: Codable, ExpressibleByStringLiteral, Hashable, RawRepresentable {
     public let rawValue: String
-
+    
     public init(rawValue: String) {
       self.rawValue = rawValue
     }
-
+    
     public init(stringLiteral value: String) {
       self.init(rawValue: value)
     }
@@ -104,15 +104,15 @@ extension Todo {
 extension Todo {
   public struct Priority: Comparable, TodoRawRepresentable {
     public let value: String
-
+    
     public var rawTodoTxt: String {
       "(\(value))"
     }
-
+    
     public init(_ string: String) {
       self.value = string
     }
-
+    
     public static func < (lhs: Todo.Priority, rhs: Todo.Priority) -> Bool {
       lhs.value < rhs.value
     }
@@ -124,15 +124,15 @@ extension Todo {
 extension Todo {
   public struct Project: Comparable, TodoRawRepresentable {
     public let title: String
-
+    
     public var rawTodoTxt: String {
       "+\(title)"
     }
-
+    
     public init(_ title: String) {
       self.title = title
     }
-
+    
     public static func < (lhs: Todo.Project, rhs: Todo.Project) -> Bool {
       lhs.title < rhs.title
     }
@@ -144,15 +144,15 @@ extension Todo {
 extension Todo {
   public struct Context: Comparable, TodoRawRepresentable {
     public let title: String
-
+    
     public var rawTodoTxt: String {
       "@\(title)"
     }
-
+    
     public init(_ title: String) {
       self.title = title
     }
-
+    
     public static func < (lhs: Todo.Context, rhs: Todo.Context) -> Bool {
       lhs.title < rhs.title
     }
@@ -172,7 +172,7 @@ extension Todo {
 
 // MARK: - Key Value support
 extension Todo {
-    public subscript(k:String) -> String? {
-        return self.attributes[k]
-    }
+  public subscript(k:String) -> String? {
+    return self.attributes[k]
+  }
 }
