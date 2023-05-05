@@ -35,7 +35,9 @@ final class TodoBuilderTests: XCTestCase {
     let todoList = TodoBuilder.build(inputs: inputs)
     let outputs = todoList.value.map(\.rawTodoTxt)
     
-    XCTAssertEqual(inputs, outputs)
+    for idx in 0..<inputs.count {
+      XCTAssertEqual(inputs[idx], outputs[idx], "error with line \(idx): \(inputs[idx])")
+    }
   }
   
   func testBuildInputWithKeys() {
@@ -75,15 +77,15 @@ final class TodoBuilderTests: XCTestCase {
   }
   
   // Canonical examples from https://github.com/todotxt/todo.txt
-  func testCanonical() {
+  func testCanonical1() {
     let ex1 = TodoBuilder.build(input: "x (A) 2016-05-20 2016-04-30 measure space for +chapelShelving @chapel due:2016-05-30")
     XCTAssertTrue(ex1.isCompletion)
     XCTAssertEqual(ex1.priority?.value,"A")
     XCTAssertEqual(ex1.createdAt, DateComponents(calendar: Calendar.current, timeZone: .gmt, year: 2016, month: 4, day: 30).date)
     XCTAssertEqual(ex1.completedAt, DateComponents(calendar: Calendar.current, timeZone: .gmt, year: 2016, month: 5, day: 20).date)
     XCTAssertEqual(ex1.title, "measure space for")
-    XCTAssertEqual(ex1.project?.title, "chapelShelving")
-    XCTAssertEqual(ex1.context?.title, "chapel")
+    XCTAssert(ex1.projects.contains(where: { $0.title == "chapelShelving" }))
+    XCTAssert(ex1.contexts.contains(where: { $0.title == "chapel" }))
     XCTAssertEqual(ex1.dueDate, DateComponents(calendar: Calendar.current, timeZone: .gmt, year: 2016, month: 5, day: 30).date)
     
     // Incomplete Tasks: Format Rule 1
@@ -109,8 +111,21 @@ Really gotta call Mom (A) @phone @someday
     XCTAssertNil(ex3.value[2].createdAt)
     
     // Incomplete Tasks: Format Rule 3
-    // TODO: would need making significant changes to the way the structure works by allowing more than one project/context
+    let exm = TodoBuilder.build(inputs:"""
+(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone
+Email SoAndSo at soandso@example.com
+Learn how to add 2+2
+""".components(separatedBy: CharacterSet.newlines))
+    XCTAssertFalse(exm.value[0].contexts.isEmpty)
+    XCTAssert(exm.value[1].contexts.isEmpty)
+    XCTAssert(exm.value[2].contexts.isEmpty)
     
+    // bonus
+    XCTAssert(exm.value[0].contexts.count == 2)
+    XCTAssert(exm.value[0].projects.count == 2)
+  }
+    
+  func testCanonical2() {
     // Complete Tasks: Format Rule 1
     let ex4 = TodoBuilder.build(inputs:"""
 x 2011-03-03 Call Mom

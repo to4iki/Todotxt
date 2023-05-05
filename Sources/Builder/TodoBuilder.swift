@@ -11,8 +11,8 @@
         isCompletion: Completion.build(input: input),
         priority: Priority.build(input: input), dates: DateManagement.build(input: input),
         title: Title.build(input: input),
-        project: Project.build(input: input),
-        context: Context.build(input: input),
+        projects: Project.build(input: input),
+        contexts: Context.build(input: input),
         dueDate: DueDate.build(input: input),
         attributes: KeyValueAttributes.build(input: input)
       )
@@ -84,12 +84,8 @@
           ChoiceOf {
             One(.whitespace)
             OneOrMore(.word)
-          }
-          NegativeLookahead {
-            OneOrMore {
-              OneOrMore(.word)
-              One(":")
-            }
+            OneOrMore(.digit)
+            OneOrMore(.anyOf("-_,;.\'\""))
           }
         }
         let regex = Regex {
@@ -106,9 +102,13 @@
               One(.whitespace)
             }
           }
-          NegativeLookahead {
+          Capture(titlematch, as: reference,
+                  transform: { word -> String in String(word) })
+          Lookahead {
             ChoiceOf {
-              One(.iso8601Date(timeZone: .gmt))
+              Anchor.endOfLine
+              One(" +")
+              One(" @")
               OneOrMore {
                 One(.whitespace)
                 OneOrMore(.word)
@@ -116,13 +116,11 @@
               }
             }
           }
-          Capture(titlematch, as: reference,
-                  transform: { word -> String in String(word) })
         }
         
         let match = input.firstMatch(of: regex)
         if let match {
-          return match[reference].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) // because we capture the last space
+          return match[reference].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) // because we sometimes capture the last space
         } else {
           return nil
         }
@@ -134,7 +132,7 @@
 
   extension TodoBuilder {
     enum Project: TodoRegexable {
-      static func build(input: String) -> Todo.Project? {
+      static func build(input: String) -> [Todo.Project] {
         let reference = Reference(Todo.Project.self)
         let regex = Regex {
           ChoiceOf {
@@ -150,12 +148,7 @@
             })
         }
         
-        let match = input.firstMatch(of: regex)
-        if let match {
-          return match[reference]
-        } else {
-          return nil
-        }
+        return input.matches(of: regex).map({ $0[reference] })
       }
     }
   }
@@ -164,7 +157,7 @@
 
   extension TodoBuilder {
     enum Context: TodoRegexable {
-      static func build(input: String) -> Todo.Context? {
+      static func build(input: String) -> [Todo.Context] {
         let reference = Reference(Todo.Context.self)
         let regex = Regex {
           ChoiceOf {
@@ -180,12 +173,7 @@
             })
         }
         
-        let match = input.firstMatch(of: regex)
-        if let match {
-          return match[reference]
-        } else {
-          return nil
-        }
+        return input.matches(of: regex).map({ $0[reference] })
       }
     }
   }
