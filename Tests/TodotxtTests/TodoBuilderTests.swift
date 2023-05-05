@@ -84,8 +84,8 @@ final class TodoBuilderTests: XCTestCase {
     XCTAssertEqual(ex1.createdAt, DateComponents(calendar: Calendar.current, timeZone: .gmt, year: 2016, month: 4, day: 30).date)
     XCTAssertEqual(ex1.completedAt, DateComponents(calendar: Calendar.current, timeZone: .gmt, year: 2016, month: 5, day: 20).date)
     XCTAssertEqual(ex1.title, "measure space for")
-    XCTAssertEqual(ex1.project?.title, "chapelShelving")
-    XCTAssertEqual(ex1.context?.title, "chapel")
+    XCTAssert(ex1.projects.contains(where: { $0.title == "chapelShelving" }))
+    XCTAssert(ex1.contexts.contains(where: { $0.title == "chapel" }))
     XCTAssertEqual(ex1.dueDate, DateComponents(calendar: Calendar.current, timeZone: .gmt, year: 2016, month: 5, day: 30).date)
     
     // Incomplete Tasks: Format Rule 1
@@ -116,9 +116,13 @@ Really gotta call Mom (A) @phone @someday
 Email SoAndSo at soandso@example.com
 Learn how to add 2+2
 """.components(separatedBy: CharacterSet.newlines))
-    XCTAssertNotNil(exm.value[0].context) // TODO: multiple
-    XCTAssertNil(exm.value[1].context)
-    XCTAssertNil(exm.value[2].context)
+    XCTAssertFalse(exm.value[0].contexts.isEmpty)
+    XCTAssert(exm.value[1].contexts.isEmpty)
+    XCTAssert(exm.value[2].contexts.isEmpty)
+    
+    // bonus
+    XCTAssert(exm.value[0].contexts.count == 2)
+    XCTAssert(exm.value[0].projects.count == 2)
   }
     
   func testCanonical2() {

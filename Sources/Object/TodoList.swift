@@ -58,9 +58,9 @@ extension TodoList {
     case .priority:
       return _sorted(by: \.priority)
     case .project:
-      return _sorted(by: \.project)
+      return _sorted(by: \.projects)
     case .context:
-      return _sorted(by: \.context)
+      return _sorted(by: \.contexts)
     }
   }
   
@@ -79,5 +79,32 @@ extension TodoList {
       }
     }
     return .init(sortedValue)
+  }
+  
+  /// Sorting by collection doesn't work by default. We use the first in alphabetical order
+  private func _sorted(by keyPath: KeyPath<Todo, Array<Todo.Context>>) -> TodoList {
+    return .init(value.sorted(by: { t1, t2 in t1.contexts < t2.contexts }))
+  }
+  
+  private func _sorted(by keyPath: KeyPath<Todo, Array<Todo.Project>>) -> TodoList {
+    return .init(value.sorted(by: { t1, t2 in t1.projects < t2.projects }))
+  }
+  
+}
+
+/// Sorting by collection doesn't work by default. We use the first in alphabetical order
+extension Array : Comparable where Element == Todo.Context {
+  public static func < (lhs: Array<Element>, rhs: Array<Element>) -> Bool {
+    if lhs.isEmpty { return false }
+    else if lhs.isEmpty { return true }
+    else { return lhs.sorted().first! < rhs.sorted().first! }
+  }
+}
+
+extension Array where Element == Todo.Project {
+  public static func < (lhs: Array<Element>, rhs: Array<Element>) -> Bool {
+    if lhs.isEmpty { return false }
+    else if lhs.isEmpty { return true }
+    else { return lhs.sorted().first! < rhs.sorted().first! }
   }
 }

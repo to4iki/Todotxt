@@ -11,8 +11,8 @@ public struct Todo: Identifiable, TodoRawRepresentable {
   public let createdAt: Date?
   public let priority: Priority?
   public let title: String?
-  public let project: Project?
-  public let context: Context?
+  public let projects: [Project]
+  public let contexts: [Context]
   public let dueDate: Date?
   public let attributes: [String:String]
   
@@ -23,13 +23,13 @@ public struct Todo: Identifiable, TodoRawRepresentable {
       completedRawTodoTxt,
       createdRawTodoTxt,
       title,
-      project.map(\.rawTodoTxt),
-      context.map(\.rawTodoTxt),
+      (projects.map(\.rawTodoTxt).joined(separator: " ") as String?),
+      (contexts.map(\.rawTodoTxt).joined(separator: " ") as String?),
       dueRawTodoTxt,
       (self.attributes.map({ $0.key+":"+$0.value }).joined(separator: " ") as String?)
     ]
       .reduce(into: "") { (result, string) in
-        if let string {
+        if let string, string != "" {
           result.append(" \(string)")
         }
       }
@@ -64,8 +64,8 @@ public struct Todo: Identifiable, TodoRawRepresentable {
     priority: Todo.Priority?,
     dates: (created: Date, completed: Date?)?,
     title: String?,
-    project: Todo.Project?,
-    context: Todo.Context?,
+    projects: [Todo.Project],
+    contexts: [Todo.Context],
     dueDate: Date?,
     attributes: [String:String]? = nil
   ) {
@@ -75,8 +75,8 @@ public struct Todo: Identifiable, TodoRawRepresentable {
     self.createdAt = dates?.created
     self.completedAt = dates?.completed
     self.title = title
-    self.project = project
-    self.context = context
+    self.projects = projects
+    self.contexts = contexts
     self.dueDate = dueDate
     if let attrs = attributes { self.attributes = attrs }
     else { self.attributes = [:] }
