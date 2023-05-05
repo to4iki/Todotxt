@@ -35,7 +35,9 @@ final class TodoBuilderTests: XCTestCase {
     let todoList = TodoBuilder.build(inputs: inputs)
     let outputs = todoList.value.map(\.rawTodoTxt)
     
-    XCTAssertEqual(inputs, outputs)
+    for idx in 0..<inputs.count {
+      XCTAssertEqual(inputs[idx], outputs[idx], "error with line \(idx): \(inputs[idx])")
+    }
   }
   
   func testBuildInputWithKeys() {
@@ -75,7 +77,7 @@ final class TodoBuilderTests: XCTestCase {
   }
   
   // Canonical examples from https://github.com/todotxt/todo.txt
-  func testCanonical() {
+  func testCanonical1() {
     let ex1 = TodoBuilder.build(input: "x (A) 2016-05-20 2016-04-30 measure space for +chapelShelving @chapel due:2016-05-30")
     XCTAssertTrue(ex1.isCompletion)
     XCTAssertEqual(ex1.priority?.value,"A")
@@ -109,8 +111,17 @@ Really gotta call Mom (A) @phone @someday
     XCTAssertNil(ex3.value[2].createdAt)
     
     // Incomplete Tasks: Format Rule 3
-    // TODO: would need making significant changes to the way the structure works by allowing more than one project/context
+    let exm = TodoBuilder.build(inputs:"""
+(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone
+Email SoAndSo at soandso@example.com
+Learn how to add 2+2
+""".components(separatedBy: CharacterSet.newlines))
+    XCTAssertNotNil(exm.value[0].context) // TODO: multiple
+    XCTAssertNil(exm.value[1].context)
+    XCTAssertNil(exm.value[2].context)
+  }
     
+  func testCanonical2() {
     // Complete Tasks: Format Rule 1
     let ex4 = TodoBuilder.build(inputs:"""
 x 2011-03-03 Call Mom

@@ -84,12 +84,8 @@
           ChoiceOf {
             One(.whitespace)
             OneOrMore(.word)
-          }
-          NegativeLookahead {
-            OneOrMore {
-              OneOrMore(.word)
-              One(":")
-            }
+            OneOrMore(.digit)
+            OneOrMore(.anyOf("-_,;.\'\""))
           }
         }
         let regex = Regex {
@@ -106,9 +102,13 @@
               One(.whitespace)
             }
           }
-          NegativeLookahead {
+          Capture(titlematch, as: reference,
+                  transform: { word -> String in String(word) })
+          Lookahead {
             ChoiceOf {
-              One(.iso8601Date(timeZone: .gmt))
+              Anchor.endOfLine
+              One(" +")
+              One(" @")
               OneOrMore {
                 One(.whitespace)
                 OneOrMore(.word)
@@ -116,13 +116,11 @@
               }
             }
           }
-          Capture(titlematch, as: reference,
-                  transform: { word -> String in String(word) })
         }
         
         let match = input.firstMatch(of: regex)
         if let match {
-          return match[reference].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) // because we capture the last space
+          return match[reference].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) // because we sometimes capture the last space
         } else {
           return nil
         }
