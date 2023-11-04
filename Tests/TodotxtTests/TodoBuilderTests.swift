@@ -144,4 +144,19 @@ X 2012-01-01 Make resolutions
     XCTAssertEqual(ex5.createdAt, DateComponents(calendar: Calendar.current, timeZone: .gmt, year: 2011, month: 3, day: 1).date)
     XCTAssertEqual(ex5.completedAt, DateComponents(calendar: Calendar.current, timeZone: .gmt, year: 2011, month: 3, day: 2).date)
   }
+  
+  func testMarkdownLinks() {
+    let ex1 = TodoBuilder.build(inputs:"""
+x 2011-03-03 [Call Mom](phone://1234567890)
+xylophone lesson [url](https://www.apple.com/page?login=true)
+X 2012-01-01 Make [resolutions](:/52f6a750feea486eb336eafcfe92e596)
+(A) x Find ticket prices [url to click](https://www.url.net) @Travel
+complicated url https://www.apple.com [https://www.apple.com](https://www.apple.com)
+""".components(separatedBy: CharacterSet.newlines))
+    XCTAssertNotNil(ex1.value[0].title)
+    XCTAssertNotNil(ex1.value[1].title)
+    XCTAssertNotNil(ex1.value[2].title)
+    XCTAssertNotNil(ex1.value[3].title)
+    XCTAssertNotNil(ex1.value[4].title)
+  }
 }

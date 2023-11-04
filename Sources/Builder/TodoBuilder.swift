@@ -2,6 +2,7 @@
   import Foundation
   import Object
   import RegexBuilder
+  import Markdown
 
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public enum TodoBuilder: TodoRegexable {
@@ -75,6 +76,14 @@
   }
 
   // MARK: - Title
+  struct LinkReplacer: MarkupRewriter {
+    var foundLinks : [UUID:Link] = [:]
+    mutating func visitLink(_ link: Link) -> Markup? {
+      let linkUUID = UUID()
+      foundLinks[linkUUID] = link
+      return Text("link"+linkUUID.uuidString)
+    }
+  }
 
   extension TodoBuilder {
     enum Title: TodoRegexable {
@@ -118,9 +127,23 @@
           }
         }
         
-        let match = input.firstMatch(of: regex)
+        // To capture markdown URLs we need to preprocess, replace them with a known word (uuid?), matche the rest, then re-replace them back
+        var sanitized = input
+        let document = Document(parsing: input)
+        var linkDeleter = LinkReplacer()
+        let newDocument = linkDeleter.visit(document)
+        if !linkDeleter.foundLinks.isEmpty {
+          sanitized = newDocument!.format()
+        }
+        
+        let match = sanitized.firstMatch(of: regex)
         if let match {
-          return match[reference].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) // because we sometimes capture the last space
+          var result = match[reference].trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) // because we sometimes capture the last space
+          for deletedLink in linkDeleter.foundLinks {
+            result = result.replacingOccurrences(of: "link"+deletedLink.key.uuidString, with: deletedLink.value.format())
+          }
+          
+          return result
         } else {
           return nil
         }
