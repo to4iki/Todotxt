@@ -12,14 +12,16 @@ let package = Package(
       name: "Todotxt",
       targets: ["Todotxt"])
   ],
-  dependencies: [],
+  dependencies: [
+    .package(url: "https://github.com/apple/swift-markdown", from: "0.3.0")
+  ],
   targets: [
     .target(
       name: "Todotxt",
       dependencies: ["Builder", "Object"]),
     .target(
       name: "Builder",
-      dependencies: ["Object"]),
+      dependencies: ["Object", .product(name: "Markdown", package: "swift-markdown")]),
     .target(
       name: "Object"),
     .testTarget(
